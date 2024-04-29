@@ -1,5 +1,7 @@
-package com.example.test.data
+package com.example.test.data.di
 
+import com.example.test.data.network.AppInterceptor
+import com.example.test.data.network.GithubService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
