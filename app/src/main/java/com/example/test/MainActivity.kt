@@ -4,8 +4,12 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -43,6 +47,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -62,6 +67,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -73,9 +81,13 @@ import com.example.test.presentation.home.HomeScreen
 import com.example.test.presentation.home.HomeViewModel
 import com.example.test.presentation.search.SearchScreen
 import com.example.test.presentation.search.SearchViewModel
+import com.example.test.presentation.setting.DarkThemeConfig
+import com.example.test.presentation.setting.SettingsDialog
+import com.example.test.presentation.setting.SettingsUiState
 import com.example.test.ui.theme.TestTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.parcel.Parcelize
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 data class BottomNavigationItem(
@@ -86,11 +98,41 @@ data class BottomNavigationItem(
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    val viewModel: MainViewModel by viewModels()
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        var uiState: MainActivityUiState by mutableStateOf(MainActivityUiState.Loading)
+
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect {
+                    uiState = it
+                }
+            }
+        }
+
         setContent {
-            TestTheme {
+            val darkTheme = shouldUseDarkTheme(uiState)
+
+            DisposableEffect(darkTheme) {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT,
+                    ) { darkTheme },
+                    navigationBarStyle = SystemBarStyle.auto(
+                        lightScrim,
+                        darkScrim,
+                    ) { darkTheme },
+                )
+                onDispose {}
+            }
+
+            TestTheme(darkTheme) {
                 val items =
                     listOf(
                         BottomNavigationItem(
@@ -112,9 +154,9 @@ class MainActivity : ComponentActivity() {
                 var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
                 if (showSettingsDialog) {
-                    SettingsDialog {
-                        showSettingsDialog = false
-                    }
+                    SettingsDialog(
+                        onDismiss = { showSettingsDialog = false }
+                    )
                 }
 
                 Surface(
@@ -199,82 +241,19 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
-fun SettingsDialog(onDismiss: () -> Unit = {}) {
-    val configuration = LocalConfiguration.current
-
-    AlertDialog(
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-        modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - 80.dp),
-        onDismissRequest = { onDismiss() },
-        title = {
-            Text(
-                text = "Settings",
-                style = MaterialTheme.typography.titleLarge,
-            )
-        },
-        text = {
-            HorizontalDivider()
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                Text(
-                    text = "테마, 언어 설정 추가 예정",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-        },
-        confirmButton = {
-            Text(
-                text = "Close",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .clickable { onDismiss() },
-            )
-        },
-    )
-}
-
-@Parcelize
-data class City(val name: String, val country: String) : Parcelable
-
-@Preview
-@Composable
-fun CityScreen() {
-    var selectedCity = rememberSaveable {
-        mutableStateOf(City("Madrid", "Spain"))
-    }
-    Column {
-        Text(text = selectedCity.value.name)
-        Text(text = selectedCity.value.country)
-        Button(onClick = {
-            selectedCity.value = City("Seoul", "Korea")
-        }) {
-            Text(text = "Change")
-        }
+private fun shouldUseDarkTheme(
+    uiState: MainActivityUiState,
+): Boolean = when (uiState) {
+    MainActivityUiState.Loading -> isSystemInDarkTheme()
+    is MainActivityUiState.Success -> when (uiState.userData.darkThemeConfig) {
+        DarkThemeConfig.FOLLOW_SYSTEM -> isSystemInDarkTheme()
+        DarkThemeConfig.LIGHT -> false
+        DarkThemeConfig.DARK -> true
     }
 }
 
-@Preview
-@OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
-@Composable
-fun TestComposable() {
-    TestTheme {
-        val snackbarHostState = remember { SnackbarHostState() }
-        val scope = rememberCoroutineScope()
+private val lightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
 
-        Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            topBar = {
-                TopAppBar(
-                    title = { Text("Test") }
-                )
-            },
-        ) { _ ->
-
-        }
-    }
-}
+private val darkScrim = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)

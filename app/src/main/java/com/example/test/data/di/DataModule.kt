@@ -7,8 +7,10 @@ import com.example.test.data.room.BookmarkDao
 import com.example.test.data.network.GithubService
 import com.example.test.data.repository.GithubRepositoryImpl
 import com.example.test.data.repository.LocalRepositoryImpl
+import com.example.test.data.repository.UserDataRepositoryImpl
 import com.example.test.domain.GithubRepository
 import com.example.test.domain.LocalRepository
+import com.example.test.domain.UserDataRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,6 +31,12 @@ class DataModule {
     @Singleton
     fun provideLocalRepository(bookmarkDao: BookmarkDao): LocalRepository =
         LocalRepositoryImpl(bookmarkDao)
+
+
+    @Provides
+    @Singleton
+    fun provideUserDataRepository(): UserDataRepository =
+        UserDataRepositoryImpl()
 
     @Singleton
     @Provides
