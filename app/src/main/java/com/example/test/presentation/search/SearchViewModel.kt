@@ -23,10 +23,27 @@ class SearchViewModel @Inject constructor(
     private val _searchList = MutableStateFlow<List<UserInfo>?>(null)
     val searchList: StateFlow<List<UserInfo>?> = _searchList.asStateFlow()
 
+    var itemsCount = 0
+    var page = 1
+
     fun searchUser(query: String) {
         viewModelScope.launch {
             repository.getSearchUser(query).collectLatest {
                 _searchList.value = it.items
+                itemsCount = it.totalCount
+                page = 1
+            }
+        }
+    }
+
+    fun loadMore(query: String) {
+        if (_searchList.value?.size == itemsCount) return
+        else {
+            page++
+            viewModelScope.launch {
+                repository.getSearchUser(query, page).collectLatest {
+                    _searchList.value = _searchList.value?.plus(it.items)
+                }
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.test.presentation.search
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -76,11 +77,11 @@ fun SearchScreen(
                 onBackClick()
             }
         )
-        val threadHold = 8
+        val threadHold = 10
         LazyColumn {
             itemsIndexed(items = items.value ?: emptyList()) { index, item ->
-                if ((index + threadHold) >= items.value?.size!! && items.value?.isNotEmpty() == true) {
-                    viewModel.searchUser(searchQuery)
+                if (index == items.value?.size?.minus(threadHold)) {
+                    viewModel.loadMore(searchQuery)
                 }
 
                 UserItem(

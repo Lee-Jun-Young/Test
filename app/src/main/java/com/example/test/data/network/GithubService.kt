@@ -14,7 +14,10 @@ interface GithubService {
     suspend fun getUserInfo(): UserInfo
 
     @GET("search/users")
-    suspend fun searchUser(@Query("q") query: String): SearchResponse
+    suspend fun searchUser(
+        @Query("q") query: String,
+        @Query("page") page: Int
+    ): SearchResponse
 
     @GET("users/{user}")
     suspend fun getUserById(@Path("user") user: String): UserInfo

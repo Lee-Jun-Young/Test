@@ -17,9 +17,9 @@ class GithubRepositoryImpl @Inject constructor(private val service: GithubServic
         }
     }
 
-    override suspend fun getSearchUser(query: String): Flow<SearchResponse> {
+    override suspend fun getSearchUser(query: String, page: Int): Flow<SearchResponse> {
         return flow {
-            val temp = service.searchUser(query)
+            val temp = service.searchUser(query, page)
             emit(temp)
         }
     }
