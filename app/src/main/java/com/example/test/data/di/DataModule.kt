@@ -1,6 +1,9 @@
 package com.example.test.data.di
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.example.test.data.room.AppDatabase
 import com.example.test.data.room.BookmarkDao
@@ -11,6 +14,7 @@ import com.example.test.data.repository.UserDataRepositoryImpl
 import com.example.test.domain.GithubRepository
 import com.example.test.domain.LocalRepository
 import com.example.test.domain.UserDataRepository
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,8 +39,8 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun provideUserDataRepository(): UserDataRepository =
-        UserDataRepositoryImpl()
+    fun provideUserDataRepository(dataStore: DataStore<Preferences>): UserDataRepository =
+        UserDataRepositoryImpl(dataStore)
 
     @Singleton
     @Provides
@@ -49,4 +53,17 @@ class DataModule {
     @Singleton
     @Provides
     fun provideFavoriteDao(appDatabase: AppDatabase): BookmarkDao = appDatabase.bookmarkDao()
+
+    private val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(
+        name = "user_preferences"
+    )
+
+    @Provides
+    @Singleton
+    fun provideUserDataStorePreferences(
+        @ApplicationContext applicationContext: Context
+    ): DataStore<Preferences> {
+        return applicationContext.userDataStore
+    }
+
 }
