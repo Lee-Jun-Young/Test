@@ -73,6 +73,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.test.presentation.bookmark.BookmarkRoute
 import com.example.test.presentation.bookmark.BookmarkScreen
 import com.example.test.presentation.bookmark.FavoriteViewModel
 import com.example.test.presentation.detail.DetailScreen
@@ -225,7 +226,7 @@ class MainActivity : ComponentActivity() {
                             }
                             composable("bookmark") {
                                 val viewModel = hiltViewModel<FavoriteViewModel>()
-                                BookmarkScreen(navController, viewModel)
+                                BookmarkRoute(navController, viewModel)
                             }
                             composable("detail/{login}") { backStackEntry ->
                                 val userId = backStackEntry.arguments?.getString("login") ?: ""

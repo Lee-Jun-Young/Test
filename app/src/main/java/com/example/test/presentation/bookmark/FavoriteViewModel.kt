@@ -1,16 +1,14 @@
 package com.example.test.presentation.bookmark
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.test.data.dto.UserInfo
-import com.example.test.domain.GithubRepository
 import com.example.test.domain.LocalRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,21 +16,13 @@ import javax.inject.Inject
 class FavoriteViewModel @Inject constructor(
     private val localRepository: LocalRepository
 ) : ViewModel() {
-
-    private val _bookmarkList = MutableStateFlow<List<UserInfo>?>(null)
-    val bookmarkList: StateFlow<List<UserInfo>?> = _bookmarkList.asStateFlow()
-
-    init {
-        getBookmarkAll()
-    }
-
-    private fun getBookmarkAll() {
-        viewModelScope.launch {
-            localRepository.getFavoriteList().collectLatest {
-                _bookmarkList.value = it
-            }
-        }
-    }
+    val bookmarksState: StateFlow<BookmarksState> = localRepository.userData.map {
+        BookmarksState.Success(it)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = BookmarksState.Loading,
+    )
 
     fun postFavorite(isChecked: Boolean, data: UserInfo) {
         viewModelScope.launch {

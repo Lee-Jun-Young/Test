@@ -87,7 +87,7 @@ fun SearchScreen(
                 UserItem(
                     user = item,
                     onItemClicked = { user ->
-                        navController.navigate("detail/${user.login}")
+                        navController.navigate("detail/${user}")
                     },
                     onChangeFavorite = { isChecked, user ->
                         viewModel.postFavorite(isChecked, user)
@@ -203,7 +203,7 @@ private fun SearchTextField(
 @Composable
 fun SearchList(
     items: List<UserInfo>,
-    onItemClicked: (UserInfo) -> Unit,
+    onItemClicked: (String) -> Unit,
     onChangeFavorite: (Boolean, UserInfo) -> Unit
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -218,7 +218,7 @@ fun SearchList(
 @Composable
 fun UserItem(
     user: UserInfo,
-    onItemClicked: (UserInfo) -> Unit,
+    onItemClicked: (String) -> Unit,
     onChangeFavorite: (Boolean, UserInfo) -> Unit
 ) {
     Row(
@@ -227,7 +227,7 @@ fun UserItem(
             .padding(16.dp)
             .testTag("userItem")
             .clickable {
-                onItemClicked(user)
+                onItemClicked(user.login)
             }
     ) {
         Row {
