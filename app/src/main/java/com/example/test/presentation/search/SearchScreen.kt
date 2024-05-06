@@ -1,6 +1,5 @@
 package com.example.test.presentation.search
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,7 +29,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,21 +47,47 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.test.data.dto.UserInfo
+import com.example.test.presentation.bookmark.LoadingState
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
-fun SearchScreen(
-    navController: NavController,
-    viewModel: SearchViewModel,
-    onBackClick: () -> Unit
+fun SearchRoute(
+    viewModel: SearchViewModel = hiltViewModel(),
+    onBackClick: () -> Unit,
+    onItemClicked: (String) -> Unit
+) {
+    val searchUiState by viewModel.searchUiState.collectAsStateWithLifecycle()
+
+    SearchScreen(
+        searchUiState = searchUiState,
+        onBackClick = onBackClick,
+        onLoadMore = viewModel::loadMore,
+        onSearchQueryChanged = {
+            viewModel.searchUser(it)
+        }, onFavoriteClicked = viewModel::postFavorite
+    ) {
+        onItemClicked(it)
+    }
+}
+
+@Composable
+internal fun SearchScreen(
+    modifier: Modifier = Modifier,
+    searchUiState: SearchUiState,
+    onSearchQueryChanged: (String) -> Unit,
+    onLoadMore: (String) -> Unit,
+    onBackClick: () -> Unit,
+    onFavoriteClicked: (Boolean, UserInfo) -> Unit,
+    onItemClicked: (String) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val items = viewModel.searchList.collectAsState()
 
-    Column {
+    Column(modifier = modifier.fillMaxSize()) {
         SearchToolbar(
             searchQuery = searchQuery,
             onSearchQueryChanged = {
@@ -71,29 +96,30 @@ fun SearchScreen(
             onSearchTriggered = {
                 searchQuery = it
                 if (searchQuery.isNotEmpty())
-                    viewModel.searchUser(searchQuery)
+                    onSearchQueryChanged(searchQuery)
             },
             onBackClick = {
                 onBackClick()
             }
         )
-        val threadHold = 10
-        LazyColumn {
-            itemsIndexed(items = items.value ?: emptyList()) { index, item ->
-                if (index == items.value?.size?.minus(threadHold)) {
-                    viewModel.loadMore(searchQuery)
-                }
-
-                UserItem(
-                    user = item,
-                    onItemClicked = { user ->
-                        navController.navigate("detail/${user}")
-                    },
+        when (searchUiState) {
+            SearchUiState.Loading -> LoadingState(modifier.fillMaxSize())
+            is SearchUiState.Success -> if (searchUiState.item.isNotEmpty()) {
+                SearchList(
+                    items = searchUiState.item,
+                    onItemClicked = onItemClicked,
                     onChangeFavorite = { isChecked, user ->
-                        viewModel.postFavorite(isChecked, user)
+                        onFavoriteClicked(isChecked, user)
+                    },
+                    onLoadMore = {
+                        onLoadMore(searchQuery)
                     }
                 )
+            } else {
+                Text("No data", modifier = Modifier.padding(16.dp))
             }
+
+            else -> {}
         }
     }
 }
@@ -204,11 +230,23 @@ private fun SearchTextField(
 fun SearchList(
     items: List<UserInfo>,
     onItemClicked: (String) -> Unit,
-    onChangeFavorite: (Boolean, UserInfo) -> Unit
+    onChangeFavorite: (Boolean, UserInfo) -> Unit,
+    onLoadMore: () -> Unit
 ) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(items.size) { idx ->
-            UserItem(user = items[idx], onItemClicked = onItemClicked) { isChecked, user ->
+    val scrollableState = rememberLazyListState()
+    val threadHold = 10
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        state = scrollableState
+    ) {
+
+        itemsIndexed(items) { index, user ->
+            if (index == items.size.minus(threadHold)) {
+                onLoadMore()
+            }
+
+            UserItem(user = user, onItemClicked = onItemClicked) { isChecked, user ->
                 onChangeFavorite(isChecked, user)
             }
         }

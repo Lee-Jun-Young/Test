@@ -5,16 +5,15 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
+import com.example.test.data.network.GithubService
+import com.example.test.data.repository.LocalRepositoryImpl
+import com.example.test.data.repository.RemoteRepositoryImpl
+import com.example.test.data.repository.UserDataRepositoryImpl
 import com.example.test.data.room.AppDatabase
 import com.example.test.data.room.BookmarkDao
-import com.example.test.data.network.GithubService
-import com.example.test.data.repository.GithubRepositoryImpl
-import com.example.test.data.repository.LocalRepositoryImpl
-import com.example.test.data.repository.UserDataRepositoryImpl
-import com.example.test.domain.GithubRepository
 import com.example.test.domain.LocalRepository
+import com.example.test.domain.RemoteRepository
 import com.example.test.domain.UserDataRepository
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,8 +27,8 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun provideSearchRepository(service: GithubService): GithubRepository =
-        GithubRepositoryImpl(service)
+    fun provideSearchRepository(service: GithubService): RemoteRepository =
+        RemoteRepositoryImpl(service)
 
     @Provides
     @Singleton

@@ -5,9 +5,10 @@ import com.example.test.data.dto.SearchResponse
 import com.example.test.data.dto.UserInfo
 import kotlinx.coroutines.flow.Flow
 
-interface GithubRepository {
-    suspend fun getUserInfo(): Flow<UserInfo>
+interface RemoteRepository {
 
+    val myData: Flow<UserInfo>
+    
     suspend fun getSearchUser(query: String, page: Int = 1): Flow<SearchResponse>
 
     suspend fun getUserById(userId: String): Flow<UserInfo>

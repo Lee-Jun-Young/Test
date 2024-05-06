@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class FavoriteViewModel @Inject constructor(
+class BookmarksViewModel @Inject constructor(
     private val localRepository: LocalRepository
 ) : ViewModel() {
     val bookmarksState: StateFlow<BookmarksState> = localRepository.userData.map {
@@ -33,4 +33,12 @@ class FavoriteViewModel @Inject constructor(
             }
         }
     }
+}
+
+sealed interface BookmarksState {
+    data object Loading : BookmarksState
+
+    data class Success(
+        val item: List<UserInfo>,
+    ) : BookmarksState
 }

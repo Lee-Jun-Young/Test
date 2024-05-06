@@ -1,48 +1,44 @@
 package com.example.test.presentation.search
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.test.data.dto.UserInfo
-import com.example.test.domain.GithubRepository
 import com.example.test.domain.LocalRepository
+import com.example.test.domain.RemoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val repository: GithubRepository,
+    private val repository: RemoteRepository,
     private val localRepository: LocalRepository
 ) : ViewModel() {
 
-    private val _searchList = MutableStateFlow<List<UserInfo>?>(null)
-    val searchList: StateFlow<List<UserInfo>?> = _searchList.asStateFlow()
+    val searchUiState = MutableStateFlow<SearchUiState>(SearchUiState.Init)
 
-    var itemsCount = 0
-    var page = 1
+    private var itemsCount = 0
+    private var page = 1
 
     fun searchUser(query: String) {
         viewModelScope.launch {
-            repository.getSearchUser(query).collectLatest {
-                _searchList.value = it.items
+            searchUiState.value = SearchUiState.Loading
+            repository.getSearchUser(query, page).collectLatest {
                 itemsCount = it.totalCount
-                page = 1
+                searchUiState.value = SearchUiState.Success(it.items)
             }
         }
     }
 
     fun loadMore(query: String) {
-        if (_searchList.value?.size == itemsCount) return
-        else {
-            page++
-            viewModelScope.launch {
+        viewModelScope.launch {
+            if (itemsCount > page * 30) {
+                page++
                 repository.getSearchUser(query, page).collectLatest {
-                    _searchList.value = _searchList.value?.plus(it.items)
+                    searchUiState.value =
+                        SearchUiState.Success((searchUiState.value as SearchUiState.Success).item + it.items)
                 }
             }
         }
@@ -57,4 +53,13 @@ class SearchViewModel @Inject constructor(
             }
         }
     }
+}
+
+sealed interface SearchUiState {
+    data object Init : SearchUiState
+    data object Loading : SearchUiState
+
+    data class Success(
+        val item: List<UserInfo>,
+    ) : SearchUiState
 }

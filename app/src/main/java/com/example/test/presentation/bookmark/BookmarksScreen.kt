@@ -11,20 +11,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.test.data.dto.UserInfo
 import com.example.test.presentation.search.UserItem
 
-
 @Composable
-fun BookmarkRoute(navController: NavController, viewModel: FavoriteViewModel) {
+fun BookmarkRoute(
+    onItemClicked: (String) -> Unit,
+    viewModel: BookmarksViewModel = hiltViewModel()
+) {
 
     val bookmarkState by viewModel.bookmarksState.collectAsStateWithLifecycle()
 
     BookmarkScreen(
         bookmarkState = bookmarkState,
-        onItemClicked = { navController.navigate("detail/${it}") },
+        onItemClicked = onItemClicked,
         onFavoriteClicked = viewModel::postFavorite
     )
 }

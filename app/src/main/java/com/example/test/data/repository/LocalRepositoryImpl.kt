@@ -1,13 +1,10 @@
 package com.example.test.data.repository
 
-import com.example.test.data.room.BookmarkDao
 import com.example.test.data.dto.UserInfo
+import com.example.test.data.room.BookmarkDao
 import com.example.test.domain.LocalRepository
-import com.example.test.domain.UserData
-import com.example.test.presentation.setting.DarkThemeConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class LocalRepositoryImpl @Inject constructor(

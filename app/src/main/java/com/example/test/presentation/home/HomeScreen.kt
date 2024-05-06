@@ -1,22 +1,15 @@
 package com.example.test.presentation.home
 
-import android.annotation.SuppressLint
-import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,30 +20,55 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.test.data.dto.RepositoryInfo
 import com.example.test.data.dto.UserInfo
+import com.example.test.presentation.bookmark.LoadingState
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
-import kotlinx.coroutines.MainScope
 
-@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun HomeScreen(viewModel: HomeViewModel, onShowDialog: () -> Unit = {}) {
-    val userInfo = viewModel.userInfo.collectAsState()
-    val repositoryList = viewModel.repositories.collectAsState()
+fun HomeRoute(viewModel: HomeViewModel = hiltViewModel(), onShowDialog: () -> Unit = {}) {
+    val homeState by viewModel.myDataState.collectAsStateWithLifecycle()
+    val repositoryState by viewModel.myRepositoriesUiState.collectAsStateWithLifecycle()
 
-    userInfo.value?.let {
-        HomeContent(it, repositoryList.value) {
-            onShowDialog()
+    HomeScreen(homeState = homeState, repositoryState = repositoryState) {
+        onShowDialog()
+    }
+}
+
+@Composable
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    homeState: MyDataState,
+    repositoryState: MyRepositoryState,
+    onShowDialog: () -> Unit = {}
+) {
+    LazyColumn {
+        item {
+            when (homeState) {
+                MyDataState.Loading -> LoadingState(modifier)
+                is MyDataState.Success -> HomeContent(
+                    userInfo = homeState.item,
+                    onShowDialog = onShowDialog
+                )
+            }
+        }
+        item {
+            when (repositoryState) {
+                MyRepositoryState.Loading -> {}
+                is MyRepositoryState.Success -> RepositoryList(
+                    repositories = repositoryState.item
+                )
+            }
         }
     }
 }
@@ -59,7 +77,6 @@ fun HomeScreen(viewModel: HomeViewModel, onShowDialog: () -> Unit = {}) {
 @Composable
 fun HomeContent(
     userInfo: UserInfo,
-    repositoryInfo: List<RepositoryInfo>?,
     onShowDialog: () -> Unit = {}
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -84,22 +101,24 @@ fun HomeContent(
         Text(text = userInfo.name ?: "")
         Text(text = userInfo.login)
         Row {
-            // click event webView
             Text(text = userInfo.followers.toString() + " followers")
             Text(text = " · ")
             Text(text = userInfo.following.toString() + " following")
         }
-        repositoryInfo?.let {
-            Spacer(modifier = Modifier.size(16.dp))
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(it.size) { idx ->
-                    RepositoryItem(data = it[idx])
-                }
-            }
+    }
+}
+
+@Composable
+fun RepositoryList(
+    modifier: Modifier = Modifier,
+    repositories: List<RepositoryInfo>
+) {
+    Column(modifier = modifier) {
+        repositories.forEach { repository ->
+            RepositoryItem(data = repository)
         }
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

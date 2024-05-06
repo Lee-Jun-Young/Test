@@ -1,26 +1,24 @@
 package com.example.test.data.repository
 
 import com.example.test.data.dto.RepositoryInfo
-import com.example.test.data.network.GithubService
 import com.example.test.data.dto.SearchResponse
 import com.example.test.data.dto.UserInfo
-import com.example.test.domain.GithubRepository
+import com.example.test.data.network.GithubService
+import com.example.test.domain.RemoteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class GithubRepositoryImpl @Inject constructor(private val service: GithubService) :
-    GithubRepository {
-    override suspend fun getUserInfo(): Flow<UserInfo> {
-        return flow {
-            emit(service.getUserInfo())
-        }
+class RemoteRepositoryImpl @Inject constructor(private val service: GithubService) :
+    RemoteRepository {
+
+    override val myData: Flow<UserInfo> = flow {
+        emit(service.getUserInfo())
     }
 
     override suspend fun getSearchUser(query: String, page: Int): Flow<SearchResponse> {
         return flow {
-            val temp = service.searchUser(query, page)
-            emit(temp)
+            emit(service.searchUser(query, page))
         }
     }
 

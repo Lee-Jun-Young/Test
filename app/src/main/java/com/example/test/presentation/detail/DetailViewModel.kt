@@ -4,32 +4,27 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.test.data.dto.RepositoryInfo
 import com.example.test.data.dto.UserInfo
-import com.example.test.domain.GithubRepository
 import com.example.test.domain.LocalRepository
+import com.example.test.domain.RemoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class DetailViewModel @Inject constructor(
-    private val repository: GithubRepository,
+    private val repository: RemoteRepository,
     private val localRepository: LocalRepository
 ) : ViewModel() {
 
-    private val _detailInfo = MutableStateFlow<UserInfo?>(null)
-    val detailInfo: StateFlow<UserInfo?> = _detailInfo.asStateFlow()
-
-    private val _repositories = MutableStateFlow<List<RepositoryInfo>?>(null)
-    val repositories: StateFlow<List<RepositoryInfo>?> = _repositories.asStateFlow()
+    val detailUiState = MutableStateFlow<DetailUiState>(DetailUiState.Loading)
+    val detailRepositoriesUiState = MutableStateFlow<DetailRepoUiState>(DetailRepoUiState.Loading)
 
     fun getUserById(query: String) {
         viewModelScope.launch {
             repository.getUserById(query).collectLatest {
-                _detailInfo.value = it
+                detailUiState.value = DetailUiState.Success(it)
                 getUserRepositories(it.login)
             }
         }
@@ -48,8 +43,24 @@ class DetailViewModel @Inject constructor(
     private fun getUserRepositories(owner: String) {
         viewModelScope.launch {
             repository.getUserRepositories(owner).collectLatest { repositories ->
-                _repositories.value = repositories
+                detailRepositoriesUiState.value = DetailRepoUiState.Success(repositories)
             }
         }
     }
+}
+
+sealed interface DetailUiState {
+    data object Loading : DetailUiState
+
+    data class Success(
+        val item: UserInfo,
+    ) : DetailUiState
+}
+
+sealed interface DetailRepoUiState {
+    data object Loading : DetailRepoUiState
+
+    data class Success(
+        val item: List<RepositoryInfo>,
+    ) : DetailRepoUiState
 }
