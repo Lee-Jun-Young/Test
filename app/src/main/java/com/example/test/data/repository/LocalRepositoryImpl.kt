@@ -4,7 +4,10 @@ import com.example.test.data.dto.UserInfo
 import com.example.test.data.room.BookmarkDao
 import com.example.test.domain.LocalRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 class LocalRepositoryImpl @Inject constructor(
@@ -13,9 +16,7 @@ class LocalRepositoryImpl @Inject constructor(
 
     override val userData: Flow<List<UserInfo>> = flow {
         val temp = bookmarkDao.getFavoriteAll()
-        temp.forEach {
-            it.isFavorite = true
-        }
+        temp.forEach { it.isFavorite = true }
         emit(temp)
     }
 

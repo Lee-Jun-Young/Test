@@ -38,7 +38,7 @@ fun DetailRoute(login: String, viewModel: DetailViewModel = hiltViewModel()) {
     val detailRepositoriesUiState by viewModel.detailRepositoriesUiState.collectAsState()
 
     viewModel.getUserById(login)
-    
+
     DetailScreen(
         detailUiState = detailUiState,
         detailRepoUiState = detailRepositoriesUiState,

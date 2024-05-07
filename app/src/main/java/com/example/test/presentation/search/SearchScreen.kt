@@ -49,7 +49,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.example.test.data.dto.UserInfo
 import com.example.test.presentation.bookmark.LoadingState
 import com.skydoves.landscapist.ImageOptions

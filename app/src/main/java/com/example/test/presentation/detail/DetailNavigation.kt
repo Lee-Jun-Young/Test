@@ -8,16 +8,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 
 const val LOGIN_ARG = "login"
-const val DETAIL_ROUTE = "detail/$LOGIN_ARG"
+const val DETAIL_ROUTE = "detail/{$LOGIN_ARG}"
 
-fun NavController.navigateToDetail(login: String, navOptions: NavOptions) {
+fun NavController.navigateToDetail(login: String, navOptions: NavOptions? = null) {
     val route = "detail/$login"
     navigate(route, navOptions)
 }
 
 fun NavGraphBuilder.detailScreen() {
-    composable(route = DETAIL_ROUTE) {
-        val login = "it.arguments?.getString(LOGIN_ARG)"
-        DetailRoute(login)
+    composable(
+        route = DETAIL_ROUTE,
+        arguments = listOf(navArgument(LOGIN_ARG) { type = NavType.StringType })
+    ) {
+        DetailRoute(it.arguments?.getString(LOGIN_ARG) ?: "")
     }
 }

@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.example.test.presentation.bookmark.bookmarksScreen
 import com.example.test.presentation.detail.detailScreen
+import com.example.test.presentation.detail.navigateToDetail
 import com.example.test.presentation.home.HOME_ROUTE
 import com.example.test.presentation.home.homeScreen
 import com.example.test.presentation.search.searchScreen
@@ -25,10 +26,10 @@ fun TestNavHost(
         homeScreen {
             onShowDialog()
         }
-        bookmarksScreen { navController.navigate("detail/${it}") }
+        bookmarksScreen { navController.navigateToDetail(it) }
         searchScreen(
             onBackPress = { navController.popBackStack() },
-            onItemClick = { navController.navigate("detail/${it}") }
+            onItemClick = { navController.navigateToDetail(it) }
         )
         detailScreen()
     }

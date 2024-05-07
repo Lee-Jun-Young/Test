@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.example.test.data.dto.UserInfo
 import com.example.test.presentation.search.UserItem
 
@@ -68,7 +67,7 @@ fun BookmarksList(
     ) {
         items(items.size) { idx ->
             UserItem(user = items[idx], onItemClicked = onItemClicked) { isChecked, user ->
-                onChangeFavorite(isChecked, user)
+                onChangeFavorite(false, user)
             }
         }
     }

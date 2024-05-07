@@ -9,6 +9,8 @@ import com.example.test.domain.RemoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.forEach
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,8 +26,19 @@ class DetailViewModel @Inject constructor(
     fun getUserById(query: String) {
         viewModelScope.launch {
             repository.getUserById(query).collectLatest {
-                detailUiState.value = DetailUiState.Success(it)
                 getUserRepositories(it.login)
+
+                localRepository.userData.map { bookmarks ->
+                    bookmarks.forEach { bookmark ->
+                        if (bookmark.login == it.login) {
+                            it.isFavorite = true
+                            return@forEach
+                        }
+                    }
+                    it
+                }.collect {
+                    detailUiState.value = DetailUiState.Success(it)
+                }
             }
         }
     }

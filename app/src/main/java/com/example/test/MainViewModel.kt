@@ -2,8 +2,8 @@ package com.example.test
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.test.presentation.setting.UserData
 import com.example.test.domain.UserDataRepository
+import com.example.test.presentation.setting.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

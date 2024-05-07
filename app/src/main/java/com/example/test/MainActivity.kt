@@ -23,28 +23,23 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.util.trace
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.example.test.presentation.TestBottomBar
@@ -104,17 +99,27 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
+                val showBottomBar = navController
+                    .currentBackStackEntryAsState().value?.destination?.route in BottomNavigationItem.entries.map { it.name.lowercase() }
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Scaffold(
                         bottomBar = {
-                            TestBottomBar(
-                                navHostController = navController,
-                                destinations = BottomNavigationItem.entries,
-                                onNavigateToDestination = { navigateDestination(navController, it) }
-                            )
+                            if (showBottomBar) {
+                                TestBottomBar(
+                                    navHostController = navController,
+                                    destinations = BottomNavigationItem.entries,
+                                    onNavigateToDestination = {
+                                        navigateDestination(
+                                            navController,
+                                            it
+                                        )
+                                    }
+                                )
+                            }
                         }) { padding ->
                         TestNavHost(
                             navController = navController,
