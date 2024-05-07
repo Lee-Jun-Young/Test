@@ -5,12 +5,12 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 
-const val BOOKMARKS_ROUTE = "bookmarks"
+const val BOOKMARK_ROUTE = "bookmark"
 
-fun NavController.navigateToBookmark(navOptions: NavOptions) = navigate(BOOKMARKS_ROUTE, navOptions)
+fun NavController.navigateToBookmark(navOptions: NavOptions) = navigate(BOOKMARK_ROUTE, navOptions)
 
 fun NavGraphBuilder.bookmarksScreen(onItemClick: (String) -> Unit) {
-    composable(BOOKMARKS_ROUTE) {
+    composable(BOOKMARK_ROUTE) {
         BookmarkRoute(onItemClick)
     }
 }

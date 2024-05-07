@@ -39,27 +39,24 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.util.trace
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.test.presentation.bookmark.BookmarkRoute
-import com.example.test.presentation.detail.DetailRoute
-import com.example.test.presentation.home.HomeRoute
-import com.example.test.presentation.search.SearchRoute
+import androidx.navigation.navOptions
+import com.example.test.presentation.TestBottomBar
+import com.example.test.presentation.TestNavHost
+import com.example.test.presentation.bookmark.navigateToBookmark
+import com.example.test.presentation.home.navigateToHome
+import com.example.test.presentation.search.navigateToSearch
 import com.example.test.presentation.setting.DarkThemeConfig
 import com.example.test.presentation.setting.SettingsDialog
 import com.example.test.ui.theme.TestTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-
-data class BottomNavigationItem(
-    val title: String,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
-)
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -82,6 +79,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val darkTheme = shouldUseDarkTheme(uiState)
+            val navController = rememberNavController()
 
             DisposableEffect(darkTheme) {
                 enableEdgeToEdge(
@@ -98,24 +96,6 @@ class MainActivity : ComponentActivity() {
             }
 
             TestTheme(darkTheme) {
-                val items =
-                    listOf(
-                        BottomNavigationItem(
-                            "Search",
-                            Icons.Filled.Search,
-                            Icons.Outlined.Search
-                        ),
-                        BottomNavigationItem("Home", Icons.Filled.Home, Icons.Outlined.Home),
-                        BottomNavigationItem(
-                            "Bookmark",
-                            Icons.Filled.Favorite,
-                            Icons.Outlined.FavoriteBorder
-                        )
-                    )
-                var selectedItemIdx by rememberSaveable {
-                    mutableIntStateOf(1)
-                }
-                val navController = rememberNavController()
                 var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
                 if (showSettingsDialog) {
@@ -130,40 +110,14 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         bottomBar = {
-                            NavigationBar {
-                                items.forEachIndexed { idx, item ->
-                                    NavigationBarItem(
-                                        icon = {
-                                            Icon(
-                                                imageVector =
-                                                if (selectedItemIdx == idx) {
-                                                    item.selectedIcon
-                                                } else {
-                                                    item.unselectedIcon
-                                                }, contentDescription = null
-                                            )
-                                        },
-                                        onClick = {
-                                            selectedItemIdx = idx
-                                            navController.navigate(
-                                                when (idx) {
-                                                    0 -> "search"
-                                                    1 -> "home"
-                                                    2 -> "bookmark"
-                                                    else -> "home"
-                                                }
-                                            )
-                                        },
-                                        selected = selectedItemIdx == idx,
-                                        label = {
-                                            Text(text = item.title)
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    ) { padding ->
-                        NavHost(
+                            TestBottomBar(
+                                navHostController = navController,
+                                destinations = BottomNavigationItem.entries,
+                                onNavigateToDestination = { navigateDestination(navController, it) }
+                            )
+                        }) { padding ->
+                        TestNavHost(
+                            navController = navController,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(padding)
@@ -173,34 +127,8 @@ class MainActivity : ComponentActivity() {
                                         WindowInsetsSides.Vertical,
                                     ),
                                 ),
-                            navController = navController,
-                            startDestination = items[selectedItemIdx].title
-                        ) {
-                            composable("home") {
-                                HomeRoute {
-                                    showSettingsDialog = true
-                                }
-                            }
-                            composable("search") {
-                                SearchRoute(onBackClick = {
-                                    navController.popBackStack()
-                                }, onItemClicked = {
-                                    navController.navigate("detail/$it")
-                                })
-                            }
-                            composable("bookmark") {
-                                BookmarkRoute(
-                                    onItemClicked = {
-
-                                    }
-                                )
-                            }
-                            composable("detail/{login}") { backStackEntry ->
-                                val userId = backStackEntry.arguments?.getString("login") ?: ""
-                                DetailRoute(userId)
-                            }
-                        }
-
+                            onShowDialog = { showSettingsDialog = true },
+                        )
                     }
                 }
             }
@@ -208,6 +136,34 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+fun navigateDestination(
+    navController: NavHostController,
+    bottomNavigationItem: BottomNavigationItem
+) {
+    val topLevelNavOptions = navOptions {
+        popUpTo(navController.graph.findStartDestination().id) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
+
+    when (bottomNavigationItem) {
+        BottomNavigationItem.HOME -> navController.navigateToHome(topLevelNavOptions)
+        BottomNavigationItem.SEARCH -> navController.navigateToSearch(topLevelNavOptions)
+        BottomNavigationItem.BOOKMARK -> navController.navigateToBookmark(topLevelNavOptions)
+    }
+}
+
+enum class BottomNavigationItem(
+    val title: String,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector
+) {
+    SEARCH("Search", Icons.Filled.Search, Icons.Outlined.Search),
+    HOME("Home", Icons.Filled.Home, Icons.Outlined.Home),
+    BOOKMARK("Bookmark", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder)
+}
 
 @Composable
 private fun shouldUseDarkTheme(
@@ -222,5 +178,4 @@ private fun shouldUseDarkTheme(
 }
 
 private val lightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
-
 private val darkScrim = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)

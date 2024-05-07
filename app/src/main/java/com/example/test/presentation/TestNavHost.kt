@@ -2,8 +2,8 @@ package com.example.test.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
 import com.example.test.presentation.bookmark.bookmarksScreen
 import com.example.test.presentation.detail.detailScreen
 import com.example.test.presentation.home.HOME_ROUTE
@@ -12,12 +12,11 @@ import com.example.test.presentation.search.searchScreen
 
 @Composable
 fun TestNavHost(
+    navController: NavHostController,
     modifier: Modifier = Modifier,
     startDestination: String = HOME_ROUTE,
     onShowDialog: () -> Unit = {},
 ) {
-    val navController = rememberNavController()
-
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -27,9 +26,10 @@ fun TestNavHost(
             onShowDialog()
         }
         bookmarksScreen { navController.navigate("detail/${it}") }
-        searchScreen(onItemClick = { navController.navigate("detail/${it}") }) {
-
-        }
+        searchScreen(
+            onBackPress = { navController.popBackStack() },
+            onItemClick = { navController.navigate("detail/${it}") }
+        )
         detailScreen()
     }
 }
