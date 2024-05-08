@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.test.data.dto.UserInfo
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BookmarkDao {
@@ -13,7 +14,7 @@ interface BookmarkDao {
     suspend fun addFavorite(data: UserInfo)
 
     @Query("SELECT * FROM BOOKMARKS")
-    suspend fun getFavoriteAll(): List<UserInfo>
+    fun getFavoriteAll(): Flow<List<UserInfo>>
 
     @Delete
     suspend fun deleteFavorite(data: UserInfo)

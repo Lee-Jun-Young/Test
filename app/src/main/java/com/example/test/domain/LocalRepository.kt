@@ -7,7 +7,7 @@ interface LocalRepository {
 
     val userData: Flow<List<UserInfo>>
 
-    suspend fun postFavorite(data: UserInfo)
-    suspend fun deleteFavorite(data: UserInfo)
+    suspend fun postBookmark(data: UserInfo)
+    suspend fun deleteBookmark(data: UserInfo)
 
 }

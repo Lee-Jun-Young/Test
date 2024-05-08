@@ -9,8 +9,7 @@ import com.example.test.domain.RemoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.forEach
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,33 +21,18 @@ class DetailViewModel @Inject constructor(
 
     val detailUiState = MutableStateFlow<DetailUiState>(DetailUiState.Loading)
     val detailRepositoriesUiState = MutableStateFlow<DetailRepoUiState>(DetailRepoUiState.Loading)
-
     fun getUserById(query: String) {
         viewModelScope.launch {
-            repository.getUserById(query).collectLatest {
-                getUserRepositories(it.login)
+            val userInfoFlow = repository.getUserById(query)
+            val userDataFlow = localRepository.userData
+            getUserRepositories(query)
 
-                localRepository.userData.map { bookmarks ->
-                    bookmarks.forEach { bookmark ->
-                        if (bookmark.login == it.login) {
-                            it.isFavorite = true
-                            return@forEach
-                        }
-                    }
-                    it
-                }.collect {
-                    detailUiState.value = DetailUiState.Success(it)
-                }
-            }
-        }
-    }
-
-    fun postFavorite(isChecked: Boolean, data: UserInfo) {
-        viewModelScope.launch {
-            if (isChecked) {
-                localRepository.postFavorite(data)
-            } else {
-                localRepository.deleteFavorite(data)
+            combine(userInfoFlow, userDataFlow) { userInfo, userData ->
+                val list = userData.map { it.id }
+                userInfo.isFavorite = list.contains(userInfo.id)
+                DetailUiState.Success(userInfo)
+            }.collect {
+                detailUiState.value = it
             }
         }
     }

@@ -9,30 +9,23 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class BookmarksViewModel @Inject constructor(
-    private val localRepository: LocalRepository
+    localRepository: LocalRepository
 ) : ViewModel() {
+
     val bookmarksState: StateFlow<BookmarksState> = localRepository.userData.map {
+        it.forEach { userInfo ->
+            userInfo.isFavorite = true
+        }
         BookmarksState.Success(it)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = BookmarksState.Loading,
     )
-
-    fun postFavorite(isChecked: Boolean, data: UserInfo) {
-        viewModelScope.launch {
-            if (isChecked) {
-                localRepository.postFavorite(data)
-            } else {
-                localRepository.deleteFavorite(data)
-            }
-        }
-    }
 }
 
 sealed interface BookmarksState {

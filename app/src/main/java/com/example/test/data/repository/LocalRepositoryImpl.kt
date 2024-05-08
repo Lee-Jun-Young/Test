@@ -4,27 +4,19 @@ import com.example.test.data.dto.UserInfo
 import com.example.test.data.room.BookmarkDao
 import com.example.test.domain.LocalRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 class LocalRepositoryImpl @Inject constructor(
     private val bookmarkDao: BookmarkDao
 ) : LocalRepository {
 
-    override val userData: Flow<List<UserInfo>> = flow {
-        val temp = bookmarkDao.getFavoriteAll()
-        temp.forEach { it.isFavorite = true }
-        emit(temp)
-    }
+    override val userData: Flow<List<UserInfo>> = bookmarkDao.getFavoriteAll()
 
-    override suspend fun postFavorite(data: UserInfo) {
+    override suspend fun postBookmark(data: UserInfo) {
         bookmarkDao.addFavorite(data)
     }
 
-    override suspend fun deleteFavorite(data: UserInfo) {
+    override suspend fun deleteBookmark(data: UserInfo) {
         bookmarkDao.deleteFavorite(data)
     }
 }

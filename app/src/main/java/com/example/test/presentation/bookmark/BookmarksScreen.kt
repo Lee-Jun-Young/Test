@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -19,7 +20,8 @@ import com.example.test.presentation.search.UserItem
 @Composable
 fun BookmarkRoute(
     onItemClicked: (String) -> Unit,
-    viewModel: BookmarksViewModel = hiltViewModel()
+    viewModel: BookmarksViewModel = hiltViewModel(),
+    onBookmarkClicked: (UserInfo) -> Unit
 ) {
 
     val bookmarkState by viewModel.bookmarksState.collectAsStateWithLifecycle()
@@ -27,7 +29,7 @@ fun BookmarkRoute(
     BookmarkScreen(
         bookmarkState = bookmarkState,
         onItemClicked = onItemClicked,
-        onFavoriteClicked = viewModel::postFavorite
+        onFavoriteClicked = onBookmarkClicked
     )
 }
 
@@ -36,7 +38,7 @@ internal fun BookmarkScreen(
     modifier: Modifier = Modifier,
     bookmarkState: BookmarksState,
     onItemClicked: (String) -> Unit,
-    onFavoriteClicked: (Boolean, UserInfo) -> Unit
+    onFavoriteClicked: (UserInfo) -> Unit
 ) {
     when (bookmarkState) {
         BookmarksState.Loading -> LoadingState(modifier)
@@ -56,7 +58,7 @@ internal fun BookmarkScreen(
 fun BookmarksList(
     items: List<UserInfo>,
     onItemClicked: (String) -> Unit,
-    onChangeFavorite: (Boolean, UserInfo) -> Unit
+    onChangeFavorite: (UserInfo) -> Unit
 ) {
     val scrollableState = rememberLazyListState()
 
@@ -65,9 +67,9 @@ fun BookmarksList(
             .fillMaxSize(),
         state = scrollableState
     ) {
-        items(items.size) { idx ->
-            UserItem(user = items[idx], onItemClicked = onItemClicked) { isChecked, user ->
-                onChangeFavorite(false, user)
+        itemsIndexed(items, key = { _, contact -> contact.id }) { index, user ->
+            UserItem(user = user, onItemClicked = onItemClicked) { user ->
+                onChangeFavorite(user)
             }
         }
     }

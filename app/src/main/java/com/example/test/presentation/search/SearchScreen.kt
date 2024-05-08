@@ -58,7 +58,8 @@ import com.skydoves.landscapist.glide.GlideImage
 fun SearchRoute(
     viewModel: SearchViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
-    onItemClicked: (String) -> Unit
+    onItemClicked: (String) -> Unit,
+    onBookmarkClicked: (UserInfo) -> Unit
 ) {
     val searchUiState by viewModel.searchUiState.collectAsStateWithLifecycle()
 
@@ -68,7 +69,7 @@ fun SearchRoute(
         onLoadMore = viewModel::loadMore,
         onSearchQueryChanged = {
             viewModel.searchUser(it)
-        }, onFavoriteClicked = viewModel::postFavorite
+        }, onFavoriteClicked = onBookmarkClicked
     ) {
         onItemClicked(it)
     }
@@ -81,7 +82,7 @@ internal fun SearchScreen(
     onSearchQueryChanged: (String) -> Unit,
     onLoadMore: (String) -> Unit,
     onBackClick: () -> Unit,
-    onFavoriteClicked: (Boolean, UserInfo) -> Unit,
+    onFavoriteClicked: (UserInfo) -> Unit,
     onItemClicked: (String) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -107,8 +108,8 @@ internal fun SearchScreen(
                 SearchList(
                     items = searchUiState.item,
                     onItemClicked = onItemClicked,
-                    onChangeFavorite = { isChecked, user ->
-                        onFavoriteClicked(isChecked, user)
+                    onChangeFavorite = { user ->
+                        onFavoriteClicked(user)
                     },
                     onLoadMore = {
                         onLoadMore(searchQuery)
@@ -229,7 +230,7 @@ private fun SearchTextField(
 fun SearchList(
     items: List<UserInfo>,
     onItemClicked: (String) -> Unit,
-    onChangeFavorite: (Boolean, UserInfo) -> Unit,
+    onChangeFavorite: (UserInfo) -> Unit,
     onLoadMore: () -> Unit
 ) {
     val scrollableState = rememberLazyListState()
@@ -240,13 +241,13 @@ fun SearchList(
         state = scrollableState
     ) {
 
-        itemsIndexed(items) { index, user ->
+        itemsIndexed(items, key = { _, contact -> contact.id }) { index, user ->
             if (index == items.size.minus(threadHold)) {
                 onLoadMore()
             }
 
-            UserItem(user = user, onItemClicked = onItemClicked) { isChecked, user ->
-                onChangeFavorite(isChecked, user)
+            UserItem(user = user, onItemClicked = onItemClicked) { user ->
+                onChangeFavorite(user)
             }
         }
     }
@@ -256,7 +257,7 @@ fun SearchList(
 fun UserItem(
     user: UserInfo,
     onItemClicked: (String) -> Unit,
-    onChangeFavorite: (Boolean, UserInfo) -> Unit
+    onChangeFavorite: (UserInfo) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -286,7 +287,8 @@ fun UserItem(
                 checked = favoriteChecked,
                 onCheckedChange = { checked ->
                     favoriteChecked = checked
-                    onChangeFavorite(checked, user)
+                    user.isFavorite = checked
+                    onChangeFavorite(user)
                 },
                 icon = {
                     Icon(

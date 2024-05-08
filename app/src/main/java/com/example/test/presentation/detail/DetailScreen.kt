@@ -32,7 +32,10 @@ import com.example.test.presentation.search.testIconToggleButton
 import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
-fun DetailRoute(login: String, viewModel: DetailViewModel = hiltViewModel()) {
+fun DetailRoute(
+    login: String, onBookmarkClick: (UserInfo) -> Unit,
+    viewModel: DetailViewModel = hiltViewModel()
+) {
 
     val detailUiState by viewModel.detailUiState.collectAsState()
     val detailRepositoriesUiState by viewModel.detailRepositoriesUiState.collectAsState()
@@ -42,7 +45,7 @@ fun DetailRoute(login: String, viewModel: DetailViewModel = hiltViewModel()) {
     DetailScreen(
         detailUiState = detailUiState,
         detailRepoUiState = detailRepositoriesUiState,
-        onFavoriteClick = viewModel::postFavorite
+        onFavoriteClick = onBookmarkClick
     )
 }
 
@@ -51,7 +54,7 @@ fun DetailScreen(
     modifier: Modifier = Modifier,
     detailUiState: DetailUiState,
     detailRepoUiState: DetailRepoUiState,
-    onFavoriteClick: (Boolean, UserInfo) -> Unit
+    onFavoriteClick: (UserInfo) -> Unit
 ) {
     LazyColumn {
         item {
@@ -97,7 +100,7 @@ fun RepositoryList(
 @Composable
 fun DetailContent(
     user: UserInfo,
-    onChangeFavorite: (Boolean, UserInfo) -> Unit
+    onChangeFavorite: (UserInfo) -> Unit
 ) {
     Box {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -120,7 +123,8 @@ fun DetailContent(
             checked = favoriteChecked,
             onCheckedChange = { checked ->
                 favoriteChecked = checked
-                onChangeFavorite(checked, user)
+                user.isFavorite = checked
+                onChangeFavorite(user)
             },
             icon = {
                 Icon(

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.example.test.data.dto.UserInfo
 import com.example.test.presentation.bookmark.bookmarksScreen
 import com.example.test.presentation.detail.detailScreen
 import com.example.test.presentation.detail.navigateToDetail
@@ -17,6 +18,7 @@ fun TestNavHost(
     modifier: Modifier = Modifier,
     startDestination: String = HOME_ROUTE,
     onShowDialog: () -> Unit = {},
+    onBookmarkClick: (UserInfo) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -26,11 +28,18 @@ fun TestNavHost(
         homeScreen {
             onShowDialog()
         }
-        bookmarksScreen { navController.navigateToDetail(it) }
+        bookmarksScreen(
+            onItemClick = { navController.navigateToDetail(it) },
+            onBookmarkClick = onBookmarkClick
+        )
+
         searchScreen(
             onBackPress = { navController.popBackStack() },
-            onItemClick = { navController.navigateToDetail(it) }
+            onItemClick = { navController.navigateToDetail(it) },
+            onBookmarkClick = onBookmarkClick
         )
-        detailScreen()
+        detailScreen(
+            onBookmarkClick = onBookmarkClick
+        )
     }
 }

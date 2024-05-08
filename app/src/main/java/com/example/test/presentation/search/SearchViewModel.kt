@@ -27,7 +27,8 @@ class SearchViewModel @Inject constructor(
             searchUiState.value = SearchUiState.Loading
             repository.getSearchUser(query, page).collectLatest {
                 itemsCount = it.totalCount
-                searchUiState.value = SearchUiState.Success(it.items)
+                searchUiState.value =
+                    SearchUiState.Success(it.items)
             }
         }
     }
@@ -40,16 +41,6 @@ class SearchViewModel @Inject constructor(
                     searchUiState.value =
                         SearchUiState.Success((searchUiState.value as SearchUiState.Success).item + it.items)
                 }
-            }
-        }
-    }
-
-    fun postFavorite(isChecked: Boolean, data: UserInfo) {
-        viewModelScope.launch {
-            if (isChecked) {
-                localRepository.postFavorite(data)
-            } else {
-                localRepository.deleteFavorite(data)
             }
         }
     }

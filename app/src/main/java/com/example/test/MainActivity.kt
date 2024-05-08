@@ -133,6 +133,7 @@ class MainActivity : ComponentActivity() {
                                     ),
                                 ),
                             onShowDialog = { showSettingsDialog = true },
+                            onBookmarkClick = viewModel::postFavorite
                         )
                     }
                 }
