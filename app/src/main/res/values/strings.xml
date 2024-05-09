@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">test</string>
+
+    <string name="search_text">Search</string>
+    <string name="home_text">Home</string>
+    <string name="bookmarks_text">Bookmark</string>
 </resources>

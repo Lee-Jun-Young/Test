@@ -1,42 +1,72 @@
 package com.example.test.navigation
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
 
 @Composable
 fun TestBottomBar(
-    navHostController: NavHostController,
     destinations: List<BottomNavigationItem>,
     onNavigateToDestination: (BottomNavigationItem) -> Unit,
+    currentDestination: NavDestination?,
     modifier: Modifier = Modifier,
 ) {
-    val navBackStackEntry by navHostController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
     NavigationBar {
-        destinations.forEachIndexed { idx, item ->
-            NavigationBarItem(
+        destinations.forEach { item ->
+            val selected = currentDestination.isSelectedDestination(item)
+
+            TestNavigationBarItem(
+                selected = selected,
+                onClick = { onNavigateToDestination(item) },
                 icon = {
                     Icon(
-                        imageVector = if (currentRoute == item.name.lowercase()) item.selectedIcon else item.unselectedIcon,
-                        contentDescription = null
+                        imageVector = item.unselectedIcon,
+                        contentDescription = null,
                     )
                 },
-                onClick = {
-                    onNavigateToDestination(item)
+                selectedIcon = {
+                    Icon(
+                        imageVector = item.selectedIcon,
+                        contentDescription = null,
+                    )
                 },
-                selected = currentRoute == item.name.lowercase(),
-                label = {
-                    Text(text = item.title)
-                }
+                label = { Text(stringResource(id = item.title)) }
             )
         }
     }
 }
+
+@Composable
+fun RowScope.TestNavigationBarItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    alwaysShowLabel: Boolean = true,
+    icon: @Composable () -> Unit,
+    selectedIcon: @Composable () -> Unit = icon,
+    label: @Composable (() -> Unit)? = null,
+) {
+    NavigationBarItem(
+        selected = selected,
+        onClick = onClick,
+        icon = if (selected) selectedIcon else icon,
+        modifier = modifier,
+        enabled = enabled,
+        label = label,
+        alwaysShowLabel = alwaysShowLabel
+    )
+}
+
+private fun NavDestination?.isSelectedDestination(destination: BottomNavigationItem) =
+    this?.hierarchy?.any {
+        it.route?.contains(destination.name, true) ?: false
+    } ?: false

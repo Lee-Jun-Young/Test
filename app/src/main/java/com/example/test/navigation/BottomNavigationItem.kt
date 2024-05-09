@@ -8,13 +8,14 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.test.R
 
 enum class BottomNavigationItem(
-    val title: String,
+    val title: Int,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 ) {
-    SEARCH("Search", Icons.Filled.Search, Icons.Outlined.Search),
-    HOME("Home", Icons.Filled.Home, Icons.Outlined.Home),
-    BOOKMARK("Bookmark", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder)
+    SEARCH(R.string.search_text, Icons.Filled.Search, Icons.Outlined.Search),
+    HOME(R.string.home_text, Icons.Filled.Home, Icons.Outlined.Home),
+    BOOKMARK(R.string.bookmarks_text, Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder)
 }

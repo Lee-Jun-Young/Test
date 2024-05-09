@@ -16,13 +16,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -33,10 +26,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -100,8 +94,12 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                val showBottomBar = navController
-                    .currentBackStackEntryAsState().value?.destination?.route in BottomNavigationItem.entries.map { it.name.lowercase() }
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+                val showBottomBar =
+                    navBackStackEntry?.destination?.route in BottomNavigationItem.entries.map { it.name.lowercase() }
+
+                val currentDestination = navBackStackEntry?.destination
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -111,11 +109,11 @@ class MainActivity : ComponentActivity() {
                         bottomBar = {
                             if (showBottomBar) {
                                 TestBottomBar(
-                                    navHostController = navController,
                                     destinations = BottomNavigationItem.entries,
                                     onNavigateToDestination = {
                                         navigateDestination(navController, it)
-                                    }
+                                    },
+                                    currentDestination = currentDestination,
                                 )
                             }
                         }) { padding ->
