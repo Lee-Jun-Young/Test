@@ -1,4 +1,4 @@
-package com.example.test.presentation
+package com.example.test.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier

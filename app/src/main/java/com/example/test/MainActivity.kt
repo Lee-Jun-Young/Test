@@ -42,8 +42,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
-import com.example.test.presentation.TestBottomBar
-import com.example.test.presentation.TestNavHost
+import com.example.test.navigation.BottomNavigationItem
+import com.example.test.navigation.TestBottomBar
+import com.example.test.navigation.TestNavHost
 import com.example.test.presentation.bookmark.navigateToBookmark
 import com.example.test.presentation.home.navigateToHome
 import com.example.test.presentation.search.navigateToSearch
@@ -113,10 +114,7 @@ class MainActivity : ComponentActivity() {
                                     navHostController = navController,
                                     destinations = BottomNavigationItem.entries,
                                     onNavigateToDestination = {
-                                        navigateDestination(
-                                            navController,
-                                            it
-                                        )
+                                        navigateDestination(navController, it)
                                     }
                                 )
                             }
@@ -159,16 +157,6 @@ fun navigateDestination(
         BottomNavigationItem.SEARCH -> navController.navigateToSearch(topLevelNavOptions)
         BottomNavigationItem.BOOKMARK -> navController.navigateToBookmark(topLevelNavOptions)
     }
-}
-
-enum class BottomNavigationItem(
-    val title: String,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
-) {
-    SEARCH("Search", Icons.Filled.Search, Icons.Outlined.Search),
-    HOME("Home", Icons.Filled.Home, Icons.Outlined.Home),
-    BOOKMARK("Bookmark", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder)
 }
 
 @Composable

@@ -32,7 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -241,7 +240,7 @@ fun SearchList(
         state = scrollableState
     ) {
 
-        itemsIndexed(items, key = { _, contact -> contact.id }) { index, user ->
+        itemsIndexed(items, key = { _, contact -> contact.login }) { index, user ->
             if (index == items.size.minus(threadHold)) {
                 onLoadMore()
             }
@@ -282,7 +281,7 @@ fun UserItem(
                 modifier = Modifier.padding(16.dp)
             )
 
-            var favoriteChecked by rememberSaveable { mutableStateOf(user.isFavorite) }
+            var favoriteChecked by remember { mutableStateOf(user.isFavorite) }
             testIconToggleButton(
                 checked = favoriteChecked,
                 onCheckedChange = { checked ->

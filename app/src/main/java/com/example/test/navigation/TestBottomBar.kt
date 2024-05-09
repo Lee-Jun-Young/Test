@@ -1,4 +1,4 @@
-package com.example.test.presentation
+package com.example.test.navigation
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -9,7 +9,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.test.BottomNavigationItem
 
 @Composable
 fun TestBottomBar(
