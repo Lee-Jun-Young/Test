@@ -18,19 +18,23 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -94,6 +98,9 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
+                val coroutineScope = rememberCoroutineScope()
+                val snackbarHostState = remember { SnackbarHostState() }
+
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
 
                 val showBottomBar =
@@ -106,6 +113,16 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Scaffold(
+                        snackbarHost = {
+                            SnackbarHost(
+                                hostState = snackbarHostState,
+                                snackbar = { snackbarData ->
+                                    Snackbar(
+                                        snackbarData = snackbarData,
+                                    )
+                                }
+                            )
+                        },
                         bottomBar = {
                             if (showBottomBar) {
                                 TestBottomBar(
@@ -129,7 +146,16 @@ class MainActivity : ComponentActivity() {
                                     ),
                                 ),
                             onShowDialog = { showSettingsDialog = true },
-                            onBookmarkClick = viewModel::postFavorite
+                            onBookmarkClick = viewModel::postFavorite,
+                            onShowSnackbar = {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = if (it) "북마크를 추가하였습니다." else "북마크를 해제하였습니다.",
+                                        actionLabel = "닫기",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
                         )
                     }
                 }

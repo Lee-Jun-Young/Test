@@ -12,9 +12,14 @@ fun NavController.navigateToBookmark(navOptions: NavOptions) = navigate(BOOKMARK
 
 fun NavGraphBuilder.bookmarksScreen(
     onItemClick: (String) -> Unit,
-    onBookmarkClick: (UserInfo) -> Unit
+    onBookmarkClick: (UserInfo) -> Unit,
+    onShowSnackbar: (Boolean) -> Unit
 ) {
     composable(BOOKMARK_ROUTE) {
-        BookmarkRoute(onItemClicked = onItemClick, onBookmarkClicked = onBookmarkClick)
+        BookmarkRoute(
+            onItemClicked = onItemClick,
+            onBookmarkClicked = onBookmarkClick,
+            onShowSnackbar = onShowSnackbar
+        )
     }
 }

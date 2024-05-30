@@ -19,6 +19,7 @@ fun TestNavHost(
     startDestination: String = HOME_ROUTE,
     onShowDialog: () -> Unit = {},
     onBookmarkClick: (UserInfo) -> Unit,
+    onShowSnackbar: (Boolean) -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -30,7 +31,8 @@ fun TestNavHost(
         }
         bookmarksScreen(
             onItemClick = { navController.navigateToDetail(it) },
-            onBookmarkClick = onBookmarkClick
+            onBookmarkClick = onBookmarkClick,
+            onShowSnackbar = onShowSnackbar
         )
 
         searchScreen(

@@ -9,9 +9,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.test.data.dto.UserInfo
@@ -21,15 +23,16 @@ import com.example.test.presentation.search.UserItem
 fun BookmarkRoute(
     onItemClicked: (String) -> Unit,
     viewModel: BookmarksViewModel = hiltViewModel(),
-    onBookmarkClicked: (UserInfo) -> Unit
+    onBookmarkClicked: (UserInfo) -> Unit,
+    onShowSnackbar: (Boolean) -> Unit
 ) {
-
     val bookmarkState by viewModel.bookmarksState.collectAsStateWithLifecycle()
 
     BookmarkScreen(
         bookmarkState = bookmarkState,
         onItemClicked = onItemClicked,
-        onFavoriteClicked = onBookmarkClicked
+        onFavoriteClicked = onBookmarkClicked,
+        onShowSnackbar = onShowSnackbar
     )
 }
 
@@ -38,7 +41,8 @@ internal fun BookmarkScreen(
     modifier: Modifier = Modifier,
     bookmarkState: BookmarksState,
     onItemClicked: (String) -> Unit,
-    onFavoriteClicked: (UserInfo) -> Unit
+    onFavoriteClicked: (UserInfo) -> Unit,
+    onShowSnackbar: (Boolean) -> Unit
 ) {
     when (bookmarkState) {
         BookmarksState.Loading -> LoadingState(modifier)
@@ -46,7 +50,8 @@ internal fun BookmarkScreen(
             BookmarksList(
                 items = bookmarkState.item,
                 onItemClicked = onItemClicked,
-                onChangeFavorite = onFavoriteClicked
+                onChangeFavorite = onFavoriteClicked,
+                onShowSnackbar = onShowSnackbar
             )
         } else {
             EmptyState(modifier)
@@ -58,7 +63,8 @@ internal fun BookmarkScreen(
 fun BookmarksList(
     items: List<UserInfo>,
     onItemClicked: (String) -> Unit,
-    onChangeFavorite: (UserInfo) -> Unit
+    onChangeFavorite: (UserInfo) -> Unit,
+    onShowSnackbar: (Boolean) -> Unit
 ) {
     val scrollableState = rememberLazyListState()
 
@@ -70,6 +76,7 @@ fun BookmarksList(
         itemsIndexed(items, key = { _, contact -> contact.id }) { index, user ->
             UserItem(user = user, onItemClicked = onItemClicked) { user ->
                 onChangeFavorite(user)
+                onShowSnackbar(user.isFavorite)
             }
         }
     }
