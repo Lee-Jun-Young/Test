@@ -16,6 +16,7 @@ class UserDataRepositoryImpl @Inject constructor(
 ) : UserDataRepository {
     override val userData: Flow<UserData> = userDataStore.data.map {
         UserData(
+            fcmToken = it[FCM_TOKEN] ?: "",
             darkThemeConfig = DarkThemeConfig.valueOf(
                 it[APP_THEME] ?: DarkThemeConfig.FOLLOW_SYSTEM.name
             )
@@ -30,9 +31,20 @@ class UserDataRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun setFcmToken(fcmToken: String) {
+        Result.runCatching {
+            userDataStore.edit { preferences ->
+                preferences[FCM_TOKEN] = fcmToken
+            }
+        }
+    }
+
     private companion object {
         val APP_THEME = stringPreferencesKey(
             name = "app_theme"
+        )
+        val FCM_TOKEN = stringPreferencesKey(
+            name = "fcm_token"
         )
     }
 }

@@ -2,6 +2,7 @@ package com.example.test
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -49,6 +50,8 @@ import com.example.test.presentation.search.navigateToSearch
 import com.example.test.presentation.setting.DarkThemeConfig
 import com.example.test.presentation.setting.SettingsDialog
 import com.example.test.ui.theme.TestTheme
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -73,6 +76,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val darkTheme = shouldUseDarkTheme(uiState)
+            val shouldFcmToken = shouldFcmToken(uiState)
+
+            if (!shouldFcmToken) {
+                viewModel.setFcmToken()
+            }
+
             val navController = rememberNavController()
 
             DisposableEffect(darkTheme) {
@@ -192,6 +201,19 @@ private fun shouldUseDarkTheme(
         DarkThemeConfig.FOLLOW_SYSTEM -> isSystemInDarkTheme()
         DarkThemeConfig.LIGHT -> false
         DarkThemeConfig.DARK -> true
+    }
+}
+
+@Composable
+private fun shouldFcmToken(uiState: MainActivityUiState): Boolean {
+    return when (uiState) {
+        is MainActivityUiState.Success -> {
+            uiState.userData.fcmToken != ""
+        }
+
+        else -> {
+            true
+        }
     }
 }
 

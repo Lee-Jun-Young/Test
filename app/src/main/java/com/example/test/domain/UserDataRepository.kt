@@ -9,4 +9,5 @@ interface UserDataRepository {
     val userData: Flow<UserData>
 
     suspend fun setDarkThemeConfig(darkThemeConfig: DarkThemeConfig)
+    suspend fun setFcmToken(fcmToken: String)
 }

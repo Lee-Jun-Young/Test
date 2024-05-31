@@ -1,11 +1,14 @@
 package com.example.test
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.test.data.dto.UserInfo
 import com.example.test.domain.LocalRepository
 import com.example.test.domain.UserDataRepository
 import com.example.test.presentation.setting.UserData
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    userDataRepository: UserDataRepository,
+    private val userDataRepository: UserDataRepository,
     private val localRepository: LocalRepository
 ) : ViewModel() {
     val uiState: StateFlow<MainActivityUiState> = userDataRepository.userData.map {
@@ -35,6 +38,20 @@ class MainViewModel @Inject constructor(
                 localRepository.deleteBookmark(data)
             }
         }
+    }
+
+    fun setFcmToken() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+
+            val token = task.result
+            viewModelScope.launch {
+                userDataRepository.setFcmToken(token)
+            }
+        })
     }
 }
 
