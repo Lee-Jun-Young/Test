@@ -6,6 +6,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.example.test.data.dto.UserInfo
 
 const val LOGIN_ARG = "login"
@@ -19,7 +20,10 @@ fun NavController.navigateToDetail(login: String, navOptions: NavOptions? = null
 fun NavGraphBuilder.detailScreen(onBookmarkClick: (UserInfo) -> Unit) {
     composable(
         route = DETAIL_ROUTE,
-        arguments = listOf(navArgument(LOGIN_ARG) { type = NavType.StringType })
+        arguments = listOf(navArgument(LOGIN_ARG) { type = NavType.StringType }),
+        deepLinks = listOf(navDeepLink {
+            uriPattern = "test://detail/{$LOGIN_ARG}"
+        })
     ) {
         DetailRoute(
             login = it.arguments?.getString(LOGIN_ARG) ?: "",
