@@ -17,21 +17,41 @@ class RemoteRepositoryImpl @Inject constructor(private val service: GithubServic
     }
 
     override suspend fun getSearchUser(query: String, page: Int): Flow<SearchResponse> {
-        return flow {
-            emit(service.searchUser(query, page))
+        return try {
+            val result = service.searchUser(query, page)
+            flow {
+                emit(result)
+            }
+        } catch (e: Exception) {
+            flow {
+                emit(SearchResponse(0, emptyList()))
+            }
         }
     }
 
-    override suspend fun getUserById(userId: String): Flow<UserInfo> {
-        return flow {
-            val temp = service.getUserById(userId)
-            emit(temp)
+    override suspend fun getUserById(userId: String): Flow<UserInfo?> {
+        return try {
+            val result = service.getUserById(userId)
+            flow {
+                emit(result)
+            }
+        } catch (e: Exception) {
+            flow {
+                emit(null)
+            }
         }
     }
 
     override suspend fun getUserRepositories(owner: String): Flow<List<RepositoryInfo>> {
-        return flow {
-            emit(service.getRepos(owner))
+        return try {
+            val result = service.getRepos(owner)
+            flow {
+                emit(result)
+            }
+        } catch (e: Exception) {
+            flow {
+                emit(emptyList())
+            }
         }
     }
 }
