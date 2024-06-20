@@ -29,17 +29,11 @@ class RemoteRepositoryImpl @Inject constructor(private val service: GithubServic
         }
     }
 
-    override suspend fun getUserById(userId: String): Flow<UserInfo?> {
-        return try {
-            val result = service.getUserById(userId)
-            flow {
-                emit(result)
-            }
-        } catch (e: Exception) {
-            flow {
-                emit(null)
-            }
-        }
+    override suspend fun getUserById(userId: String): Flow<UserInfo> {
+        val result = service.getUserById(userId)
+         return flow {
+             emit(result)
+         }
     }
 
     override suspend fun getUserRepositories(owner: String): Flow<List<RepositoryInfo>> {

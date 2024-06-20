@@ -1,5 +1,10 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.example.test.presentation.bookmark
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,11 +14,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.test.data.dto.UserInfo
@@ -24,7 +27,9 @@ fun BookmarkRoute(
     onItemClicked: (String) -> Unit,
     viewModel: BookmarksViewModel = hiltViewModel(),
     onBookmarkClicked: (UserInfo) -> Unit,
-    onShowSnackbar: (Boolean) -> Unit
+    onShowSnackbar: (Boolean) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
     val bookmarkState by viewModel.bookmarksState.collectAsStateWithLifecycle()
 
@@ -32,7 +37,9 @@ fun BookmarkRoute(
         bookmarkState = bookmarkState,
         onItemClicked = onItemClicked,
         onFavoriteClicked = onBookmarkClicked,
-        onShowSnackbar = onShowSnackbar
+        onShowSnackbar = onShowSnackbar,
+        sharedTransitionScope = sharedTransitionScope,
+        animatedContentScope = animatedContentScope
     )
 }
 
@@ -42,7 +49,9 @@ internal fun BookmarkScreen(
     bookmarkState: BookmarksState,
     onItemClicked: (String) -> Unit,
     onFavoriteClicked: (UserInfo) -> Unit,
-    onShowSnackbar: (Boolean) -> Unit
+    onShowSnackbar: (Boolean) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
     when (bookmarkState) {
         BookmarksState.Loading -> LoadingState(modifier)
@@ -51,7 +60,9 @@ internal fun BookmarkScreen(
                 items = bookmarkState.item,
                 onItemClicked = onItemClicked,
                 onChangeFavorite = onFavoriteClicked,
-                onShowSnackbar = onShowSnackbar
+                onShowSnackbar = onShowSnackbar,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedContentScope = animatedContentScope
             )
         } else {
             EmptyState(modifier)
@@ -64,7 +75,9 @@ fun BookmarksList(
     items: List<UserInfo>,
     onItemClicked: (String) -> Unit,
     onChangeFavorite: (UserInfo) -> Unit,
-    onShowSnackbar: (Boolean) -> Unit
+    onShowSnackbar: (Boolean) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
     val scrollableState = rememberLazyListState()
 
@@ -74,7 +87,12 @@ fun BookmarksList(
         state = scrollableState
     ) {
         itemsIndexed(items, key = { _, contact -> contact.id }) { index, user ->
-            UserItem(user = user, onItemClicked = onItemClicked) { user ->
+            UserItem(
+                user = user,
+                onItemClicked = onItemClicked,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedContentScope = animatedContentScope
+            ) { user ->
                 onChangeFavorite(user)
                 onShowSnackbar(user.isFavorite)
             }

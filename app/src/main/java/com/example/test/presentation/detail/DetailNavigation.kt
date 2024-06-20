@@ -1,5 +1,9 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.example.test.presentation.detail
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
@@ -17,7 +21,10 @@ fun NavController.navigateToDetail(login: String, navOptions: NavOptions? = null
     navigate(route, navOptions)
 }
 
-fun NavGraphBuilder.detailScreen(onBookmarkClick: (UserInfo) -> Unit) {
+fun NavGraphBuilder.detailScreen(
+    onBookmarkClick: (UserInfo) -> Unit,
+    sharedTransitionScope: SharedTransitionScope
+) {
     composable(
         route = DETAIL_ROUTE,
         arguments = listOf(navArgument(LOGIN_ARG) { type = NavType.StringType }),
@@ -27,7 +34,9 @@ fun NavGraphBuilder.detailScreen(onBookmarkClick: (UserInfo) -> Unit) {
     ) {
         DetailRoute(
             login = it.arguments?.getString(LOGIN_ARG) ?: "",
-            onBookmarkClick = onBookmarkClick
+            onBookmarkClick = onBookmarkClick,
+            sharedTransitionScope = sharedTransitionScope,
+            animatedContentScope = this@composable
         )
     }
 }

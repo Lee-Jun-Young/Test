@@ -1,5 +1,9 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.example.test.presentation.search
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
@@ -13,13 +17,16 @@ fun NavController.navigateToSearch(navOptions: NavOptions) = navigate(SEARCH_ROU
 fun NavGraphBuilder.searchScreen(
     onItemClick: (String) -> Unit,
     onBackPress: () -> Unit,
-    onBookmarkClick: (UserInfo) -> Unit
+    onBookmarkClick: (UserInfo) -> Unit,
+    sharedTransitionScope: SharedTransitionScope
 ) {
     composable(SEARCH_ROUTE) {
         SearchRoute(
             onBackClick = onBackPress,
             onItemClicked = onItemClick,
-            onBookmarkClicked = onBookmarkClick
+            onBookmarkClicked = onBookmarkClick,
+            sharedTransitionScope = sharedTransitionScope,
+            animatedContentScope = this@composable
         )
     }
 }

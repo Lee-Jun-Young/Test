@@ -1,5 +1,10 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.example.test.presentation.search
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -58,7 +63,9 @@ fun SearchRoute(
     viewModel: SearchViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
     onItemClicked: (String) -> Unit,
-    onBookmarkClicked: (UserInfo) -> Unit
+    onBookmarkClicked: (UserInfo) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
     val searchUiState by viewModel.searchUiState.collectAsStateWithLifecycle()
 
@@ -68,7 +75,10 @@ fun SearchRoute(
         onLoadMore = viewModel::loadMore,
         onSearchQueryChanged = {
             viewModel.searchUser(it)
-        }, onFavoriteClicked = onBookmarkClicked
+        },
+        onFavoriteClicked = onBookmarkClicked,
+        sharedTransitionScope = sharedTransitionScope,
+        animatedContentScope = animatedContentScope
     ) {
         onItemClicked(it)
     }
@@ -82,6 +92,8 @@ internal fun SearchScreen(
     onLoadMore: (String) -> Unit,
     onBackClick: () -> Unit,
     onFavoriteClicked: (UserInfo) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     onItemClicked: (String) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -112,7 +124,9 @@ internal fun SearchScreen(
                     },
                     onLoadMore = {
                         onLoadMore(searchQuery)
-                    }
+                    },
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedContentScope = animatedContentScope
                 )
             } else {
                 Text("No data", modifier = Modifier.padding(16.dp))
@@ -230,7 +244,9 @@ fun SearchList(
     items: List<UserInfo>,
     onItemClicked: (String) -> Unit,
     onChangeFavorite: (UserInfo) -> Unit,
-    onLoadMore: () -> Unit
+    onLoadMore: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
     val scrollableState = rememberLazyListState()
     val threadHold = 10
@@ -245,7 +261,12 @@ fun SearchList(
                 onLoadMore()
             }
 
-            UserItem(user = user, onItemClicked = onItemClicked) { user ->
+            UserItem(
+                user = user,
+                onItemClicked = onItemClicked,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedContentScope = animatedContentScope
+            ) { user ->
                 onChangeFavorite(user)
             }
         }
@@ -256,20 +277,28 @@ fun SearchList(
 fun UserItem(
     user: UserInfo,
     onItemClicked: (String) -> Unit,
-    onChangeFavorite: (UserInfo) -> Unit
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
+    onChangeFavorite: (UserInfo) -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .testTag("userItem")
-            .clickable {
-                onItemClicked(user.login)
-            }
-    ) {
-        Row {
+    with(sharedTransitionScope) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .testTag("userItem")
+                .clickable {
+                    onItemClicked(user.login)
+                },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             GlideImage(
-                modifier = Modifier.size(100.dp),
+                modifier = Modifier.Companion
+                    .sharedElement(
+                        sharedTransitionScope.rememberSharedContentState(key = "image-${user.avatarUrl}"),
+                        animatedVisibilityScope = animatedContentScope
+                    )
+                    .size(100.dp),
                 imageModel = { user.avatarUrl },
                 imageOptions = ImageOptions(
                     contentScale = ContentScale.Crop,
@@ -277,8 +306,13 @@ fun UserItem(
                 )
             )
             Text(
-                text = user.login,
-                modifier = Modifier.padding(16.dp)
+                text = user.login, Modifier.Companion
+                    .sharedElement(
+                        sharedTransitionScope.rememberSharedContentState(key = "text-${user.login}"),
+                        animatedVisibilityScope = animatedContentScope
+                    )
+                    .weight(1f)
+                    .padding(start = 12.dp)
             )
 
             var favoriteChecked by remember { mutableStateOf(user.isFavorite) }
@@ -302,7 +336,6 @@ fun UserItem(
                     )
                 },
             )
-
         }
     }
 }

@@ -1,5 +1,10 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.example.test.presentation.detail
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -34,7 +39,9 @@ import com.skydoves.landscapist.glide.GlideImage
 @Composable
 fun DetailRoute(
     login: String, onBookmarkClick: (UserInfo) -> Unit,
-    viewModel: DetailViewModel = hiltViewModel()
+    viewModel: DetailViewModel = hiltViewModel(),
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
 
     val detailUiState by viewModel.detailUiState.collectAsState()
@@ -45,7 +52,9 @@ fun DetailRoute(
     DetailScreen(
         detailUiState = detailUiState,
         detailRepoUiState = detailRepositoriesUiState,
-        onFavoriteClick = onBookmarkClick
+        sharedTransitionScope = sharedTransitionScope,
+        animatedContentScope = animatedContentScope,
+        onFavoriteClick = onBookmarkClick,
     )
 }
 
@@ -54,16 +63,20 @@ fun DetailScreen(
     modifier: Modifier = Modifier,
     detailUiState: DetailUiState,
     detailRepoUiState: DetailRepoUiState,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     onFavoriteClick: (UserInfo) -> Unit
 ) {
     LazyColumn {
         item {
             when (detailUiState) {
-                DetailUiState.Loading -> LoadingState(modifier)
+                DetailUiState.Loading -> {}//LoadingState(modifier)
                 is DetailUiState.Success -> {
                     DetailContent(
                         user = detailUiState.item,
-                        onChangeFavorite = onFavoriteClick
+                        onChangeFavorite = onFavoriteClick,
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedContentScope = animatedContentScope
                     )
                 }
             }
@@ -100,44 +113,58 @@ fun RepositoryList(
 @Composable
 fun DetailContent(
     user: UserInfo,
-    onChangeFavorite: (UserInfo) -> Unit
+    onChangeFavorite: (UserInfo) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
-    Box {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            GlideImage(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(16f / 9f),
-                imageModel = { user.avatarUrl })
-            Text(text = user.name ?: "")
-            Text(text = user.login)
-            Text(text = "${user.followers} followers · ${user.following} following")
-        }
+    with(sharedTransitionScope) {
+        Box {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                GlideImage(
+                    modifier = Modifier
+                        .Companion
+                        .sharedElement(
+                            sharedTransitionScope.rememberSharedContentState(key = "image-${user.avatarUrl}"),
+                            animatedVisibilityScope = animatedContentScope
+                        )
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f),
+                    imageModel = { user.avatarUrl })
+                Text(text = user.name ?: "")
+                Text(
+                    text = user.login, Modifier.Companion
+                        .sharedElement(
+                            sharedTransitionScope.rememberSharedContentState(key = "text-${user.login}"),
+                            animatedVisibilityScope = animatedContentScope
+                        )
+                )
+            }
 
-        var favoriteChecked by rememberSaveable { mutableStateOf(user.isFavorite) }
-        testIconToggleButton(
-            modifier = Modifier
-                .padding(16.dp)
-                .size(48.dp)
-                .align(Alignment.BottomEnd),
-            checked = favoriteChecked,
-            onCheckedChange = { checked ->
-                favoriteChecked = checked
-                user.isFavorite = checked
-                onChangeFavorite(user)
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.FavoriteBorder,
-                    contentDescription = null,
-                )
-            },
-            checkedIcon = {
-                Icon(
-                    imageVector = Icons.Default.Favorite,
-                    contentDescription = null,
-                )
-            },
-        )
+            var favoriteChecked by rememberSaveable { mutableStateOf(user.isFavorite) }
+            testIconToggleButton(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(48.dp)
+                    .align(Alignment.BottomEnd),
+                checked = favoriteChecked,
+                onCheckedChange = { checked ->
+                    favoriteChecked = checked
+                    user.isFavorite = checked
+                    onChangeFavorite(user)
+                },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.FavoriteBorder,
+                        contentDescription = null,
+                    )
+                },
+                checkedIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = null,
+                    )
+                },
+            )
+        }
     }
 }
