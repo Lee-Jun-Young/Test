@@ -2,6 +2,7 @@
 
 package com.example.test.presentation.search
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -47,6 +48,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
@@ -97,6 +99,7 @@ internal fun SearchScreen(
     onItemClicked: (String) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     Column(modifier = modifier.fillMaxSize()) {
         SearchToolbar(
@@ -108,6 +111,9 @@ internal fun SearchScreen(
                 searchQuery = it
                 if (searchQuery.isNotEmpty())
                     onSearchQueryChanged(searchQuery)
+                else
+                    Toast.makeText(context, "검색어를 입력해 주세요.", Toast.LENGTH_SHORT)
+                        .show()
             },
             onBackClick = {
                 onBackClick()
