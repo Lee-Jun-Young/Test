@@ -1,7 +1,30 @@
 <resources>
     <string name="app_name">test</string>
 
-    <string name="search_text">Search</string>
-    <string name="home_text">Home</string>
-    <string name="bookmarks_text">Bookmark</string>
+    <string name="search_text">검색</string>
+    <string name="home_text">홈</string>
+    <string name="bookmarks_text">북마크</string>
+    <string name="settings_text">설정</string>
+    <string name="search_text_empty">검색어를 입력해주세요.</string>
+    <string name="search_result_empty">검색 결과가 없습니다.</string>
+    <string name="bookmark_result_empty">북마크 결과가 없습니다.</string>
+
+    <string name="close_text">닫기</string>
+    <string name="ok_text">확인</string>
+
+    <string name="language_text">언어</string>
+    <string name="language_korean_text">한국어</string>
+    <string name="language_english_text">영어</string>
+
+    <string name="loading_text">로딩중...</string>
+
+    <string name="repository_text">저장소</string>
+
+    <string name="bookmark_add_text">북마크를 추가하였습니다.</string>
+    <string name="bookmark_remove_text">북마크를 해제하였습니다.</string>
+
+    <string name="theme_text">테마</string>
+    <string name="theme_system_text">시스템 설정</string>
+    <string name="theme_light_text">라이트</string>
+    <string name="theme_dark_text">다크</string>
 </resources>

@@ -51,10 +51,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.test.R
 import com.example.test.data.dto.UserInfo
 import com.example.test.presentation.bookmark.LoadingState
 import com.skydoves.landscapist.ImageOptions
@@ -112,7 +114,11 @@ internal fun SearchScreen(
                 if (searchQuery.isNotEmpty())
                     onSearchQueryChanged(searchQuery)
                 else
-                    Toast.makeText(context, "검색어를 입력해 주세요.", Toast.LENGTH_SHORT)
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.search_text_empty),
+                        Toast.LENGTH_SHORT
+                    )
                         .show()
             },
             onBackClick = {
@@ -135,7 +141,10 @@ internal fun SearchScreen(
                     animatedContentScope = animatedContentScope
                 )
             } else {
-                Text("No data", modifier = Modifier.padding(16.dp))
+                Text(
+                    stringResource(id = R.string.search_result_empty),
+                    modifier = Modifier.padding(16.dp)
+                )
             }
 
             else -> {}

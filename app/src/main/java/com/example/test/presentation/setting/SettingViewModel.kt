@@ -22,6 +22,7 @@ class SettingViewModel @Inject constructor(
                 SettingsUiState.Success(
                     settings = UserEditableSettings(
                         darkThemeConfig = userData.darkThemeConfig,
+                        language = userData.language,
                     ),
                 )
             }
@@ -36,10 +37,17 @@ class SettingViewModel @Inject constructor(
             userDataRepository.setDarkThemeConfig(darkThemeConfig)
         }
     }
+
+    fun updateLanguageConfig(language: AppLanguageConfig) {
+        viewModelScope.launch {
+            userDataRepository.setAppLanguage(language)
+        }
+    }
 }
 
 data class UserEditableSettings(
     val darkThemeConfig: DarkThemeConfig,
+    val language: AppLanguageConfig
 )
 
 sealed interface SettingsUiState {
@@ -51,4 +59,9 @@ enum class DarkThemeConfig {
     FOLLOW_SYSTEM,
     LIGHT,
     DARK,
+}
+
+enum class AppLanguageConfig {
+    ENGLISH,
+    KOREAN
 }

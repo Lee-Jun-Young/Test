@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.test.domain.UserDataRepository
+import com.example.test.presentation.setting.AppLanguageConfig
 import com.example.test.presentation.setting.DarkThemeConfig
 import com.example.test.presentation.setting.UserData
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +20,9 @@ class UserDataRepositoryImpl @Inject constructor(
             fcmToken = it[FCM_TOKEN] ?: "",
             darkThemeConfig = DarkThemeConfig.valueOf(
                 it[APP_THEME] ?: DarkThemeConfig.FOLLOW_SYSTEM.name
+            ),
+            language = AppLanguageConfig.valueOf(
+                it[APP_LANGUAGE] ?: AppLanguageConfig.ENGLISH.name
             )
         )
     }
@@ -39,12 +43,23 @@ class UserDataRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun setAppLanguage(language: AppLanguageConfig) {
+        Result.runCatching {
+            userDataStore.edit { preferences ->
+                preferences[APP_LANGUAGE] = language.name
+            }
+        }
+    }
+
     private companion object {
         val APP_THEME = stringPreferencesKey(
             name = "app_theme"
         )
         val FCM_TOKEN = stringPreferencesKey(
             name = "fcm_token"
+        )
+        val APP_LANGUAGE = stringPreferencesKey(
+            name = "app_language"
         )
     }
 }

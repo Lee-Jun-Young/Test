@@ -27,11 +27,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.test.R
 import com.example.test.data.dto.RepositoryInfo
 import com.example.test.data.dto.UserInfo
-import com.example.test.presentation.bookmark.LoadingState
 import com.example.test.presentation.home.RepositoryItem
 import com.example.test.presentation.search.testIconToggleButton
 import com.skydoves.landscapist.glide.GlideImage
@@ -102,7 +103,7 @@ fun RepositoryList(
     repositories: List<RepositoryInfo>
 ) {
     Column(modifier = modifier) {
-        Text(text = "Repositories")
+        Text(text = stringResource(id = R.string.repository_text))
         Spacer(modifier = Modifier.height(8.dp))
         repositories.forEach { repository ->
             RepositoryItem(data = repository)

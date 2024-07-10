@@ -22,11 +22,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.test.R
 
 
 @Composable
@@ -39,6 +41,7 @@ fun SettingsDialog(
         onDismiss = onDismiss,
         settingsUiState = settingsUiState,
         onChangeDarkThemeConfig = viewModel::updateDarkThemeConfig,
+        onChangeLanguageConfig = viewModel::updateLanguageConfig,
     )
 }
 
@@ -46,7 +49,8 @@ fun SettingsDialog(
 fun SettingsDialog(
     settingsUiState: SettingsUiState,
     onDismiss: () -> Unit,
-    onChangeDarkThemeConfig: (darkThemeConfig: DarkThemeConfig) -> Unit
+    onChangeDarkThemeConfig: (darkThemeConfig: DarkThemeConfig) -> Unit,
+    onChangeLanguageConfig: (appLanguageConfig: AppLanguageConfig) -> Unit
 ) {
     val configuration = LocalConfiguration.current
 
@@ -56,7 +60,7 @@ fun SettingsDialog(
         onDismissRequest = { onDismiss() },
         title = {
             Text(
-                text = "Settings",
+                text = stringResource(id = R.string.settings_text),
                 style = MaterialTheme.typography.titleLarge,
             )
         },
@@ -66,7 +70,7 @@ fun SettingsDialog(
                 when (settingsUiState) {
                     SettingsUiState.Loading -> {
                         Text(
-                            text = "Loading...",
+                            text = stringResource(id = R.string.loading_text),
                             modifier = Modifier.padding(vertical = 16.dp),
                         )
                     }
@@ -75,6 +79,7 @@ fun SettingsDialog(
                         SettingsPanel(
                             settings = settingsUiState.settings,
                             onChangeDarkThemeConfig = onChangeDarkThemeConfig,
+                            onChangeLanguageConfig = onChangeLanguageConfig
                         )
                     }
                 }
@@ -83,7 +88,7 @@ fun SettingsDialog(
         },
         confirmButton = {
             Text(
-                text = "OK",
+                text = stringResource(id = R.string.ok_text),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -98,23 +103,37 @@ fun SettingsDialog(
 private fun SettingsPanel(
     settings: UserEditableSettings,
     onChangeDarkThemeConfig: (darkThemeConfig: DarkThemeConfig) -> Unit,
+    onChangeLanguageConfig: (language: AppLanguageConfig) -> Unit,
 ) {
-    SettingsDialogSectionTitle(text = "Theme")
+    SettingsDialogSectionTitle(text = stringResource(id = R.string.theme_text))
     Column(Modifier.selectableGroup()) {
         SettingsDialogThemeChooserRow(
-            text = "Follow System",
+            text = stringResource(id = R.string.theme_system_text),
             selected = settings.darkThemeConfig == DarkThemeConfig.FOLLOW_SYSTEM,
             onClick = { onChangeDarkThemeConfig(DarkThemeConfig.FOLLOW_SYSTEM) },
         )
         SettingsDialogThemeChooserRow(
-            text = "Light",
+            text = stringResource(id = R.string.theme_light_text),
             selected = settings.darkThemeConfig == DarkThemeConfig.LIGHT,
             onClick = { onChangeDarkThemeConfig(DarkThemeConfig.LIGHT) },
         )
         SettingsDialogThemeChooserRow(
-            text = "Dark",
+            text = stringResource(id = R.string.theme_dark_text),
             selected = settings.darkThemeConfig == DarkThemeConfig.DARK,
             onClick = { onChangeDarkThemeConfig(DarkThemeConfig.DARK) },
+        )
+    }
+    SettingsDialogSectionTitle(text = stringResource(id = R.string.language_text))
+    Column(Modifier.selectableGroup()) {
+        SettingsDialogThemeChooserRow(
+            text = stringResource(id = R.string.language_korean_text),
+            selected = settings.language == AppLanguageConfig.KOREAN,
+            onClick = { onChangeLanguageConfig(AppLanguageConfig.KOREAN) },
+        )
+        SettingsDialogThemeChooserRow(
+            text = stringResource(id = R.string.language_english_text),
+            selected = settings.language == AppLanguageConfig.ENGLISH,
+            onClick = { onChangeLanguageConfig(AppLanguageConfig.ENGLISH) },
         )
     }
 }

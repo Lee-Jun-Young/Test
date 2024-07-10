@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">test</string>
+    <string name="search_text">Search</string>
+    <string name="home_text">Home</string>
+    <string name="bookmarks_text">Bookmark</string>
+    <string name="settings_text">Settings</string>
+    <string name="search_text_empty">Please enter a search term.</string>
+    <string name="search_result_empty">No Data.</string>
+    <string name="bookmark_result_empty">No bookmarks</string>
+
+    <string name="close_text">Close</string>
+    <string name="ok_text">OK</string>
+
+    <string name="language_text">Language</string>
+    <string name="language_korean_text">Korean</string>
+    <string name="language_english_text">English</string>
+
+    <string name="loading_text">Loading...</string>
+
+    <string name="repository_text">Repository</string>
+
+    <string name="bookmark_add_text">Bookmark added</string>
+    <string name="bookmark_remove_text">Bookmark removed</string>
+
+    <string name="theme_text">Theme</string>
+    <string name="theme_system_text">Follow System</string>
+    <string name="theme_light_text">Light</string>
+    <string name="theme_dark_text">Dark</string>
+</resources>

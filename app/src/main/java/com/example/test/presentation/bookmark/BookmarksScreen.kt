@@ -17,8 +17,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.test.R
 import com.example.test.data.dto.UserInfo
 import com.example.test.presentation.search.UserItem
 
@@ -118,6 +120,6 @@ fun EmptyState(modifier: Modifier) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "No bookmarks")
+        Text(text = stringResource(id = R.string.bookmark_result_empty))
     }
 }

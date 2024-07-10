@@ -1,8 +1,8 @@
 package com.example.test
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -33,6 +33,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -47,13 +48,13 @@ import com.example.test.navigation.TestNavHost
 import com.example.test.presentation.bookmark.navigateToBookmark
 import com.example.test.presentation.home.navigateToHome
 import com.example.test.presentation.search.navigateToSearch
+import com.example.test.presentation.setting.AppLanguageConfig
 import com.example.test.presentation.setting.DarkThemeConfig
 import com.example.test.presentation.setting.SettingsDialog
 import com.example.test.ui.theme.TestTheme
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -75,12 +76,16 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
+            val context = LocalContext.current
+
             val darkTheme = shouldUseDarkTheme(uiState)
             val shouldFcmToken = shouldFcmToken(uiState)
 
             if (!shouldFcmToken) {
                 viewModel.setFcmToken()
             }
+
+            setLocale(context, uiState)
 
             val navController = rememberNavController()
 
@@ -159,8 +164,10 @@ class MainActivity : ComponentActivity() {
                             onShowSnackbar = {
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = if (it) "북마크를 추가하였습니다." else "북마크를 해제하였습니다.",
-                                        actionLabel = "닫기",
+                                        message = if (it) context.getString(R.string.bookmark_add_text) else context.getString(
+                                            R.string.bookmark_remove_text
+                                        ),
+                                        actionLabel = context.getString(R.string.close_text),
                                         duration = SnackbarDuration.Short
                                     )
                                 }
@@ -215,6 +222,33 @@ private fun shouldFcmToken(uiState: MainActivityUiState): Boolean {
             true
         }
     }
+}
+
+@Composable
+private fun setLocale(
+    context: Context,
+    uiState: MainActivityUiState,
+) {
+    val language = when (uiState) {
+        is MainActivityUiState.Success -> {
+            when (uiState.userData.language) {
+                AppLanguageConfig.KOREAN -> "ko"
+                AppLanguageConfig.ENGLISH -> "en"
+            }
+        }
+
+        else -> "en"
+    }
+
+    setLocale(context, language)
+}
+
+private fun setLocale(context: Context, language: String) {
+    val locale = Locale(language)
+    Locale.setDefault(locale)
+    val configuration = context.resources.configuration
+    configuration.setLocale(locale)
+    context.resources.updateConfiguration(configuration, context.resources.displayMetrics)
 }
 
 private val lightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)

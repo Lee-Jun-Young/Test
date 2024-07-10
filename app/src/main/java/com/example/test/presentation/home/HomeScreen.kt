@@ -26,9 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.test.R
 import com.example.test.data.dto.RepositoryInfo
 import com.example.test.data.dto.UserInfo
 import com.example.test.presentation.bookmark.LoadingState
@@ -81,9 +83,9 @@ fun HomeContent(
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         NiaTopAppBar(
-            title = "Home",
+            title = stringResource(id = R.string.home_text),
             actionIcon = Icons.Default.MoreVert,
-            actionIconContentDescription = "Settings",
+            actionIconContentDescription = stringResource(id = R.string.settings_text),
             onActionClick = {
                 onShowDialog()
             }
