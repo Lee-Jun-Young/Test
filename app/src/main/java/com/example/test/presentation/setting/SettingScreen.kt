@@ -18,10 +18,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -30,13 +35,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.test.R
 
-
 @Composable
 fun SettingsDialog(
     onDismiss: () -> Unit,
     viewModel: SettingViewModel = hiltViewModel(),
 ) {
     val settingsUiState by viewModel.settingsUiState.collectAsStateWithLifecycle()
+
     SettingsDialog(
         onDismiss = onDismiss,
         settingsUiState = settingsUiState,
@@ -53,50 +58,54 @@ fun SettingsDialog(
     onChangeLanguageConfig: (appLanguageConfig: AppLanguageConfig) -> Unit
 ) {
     val configuration = LocalConfiguration.current
+    val context = LocalContext.current
+    var title by remember { mutableStateOf("") }
 
-    AlertDialog(
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-        modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - 80.dp),
-        onDismissRequest = { onDismiss() },
-        title = {
+    when (settingsUiState) {
+        SettingsUiState.Loading -> {
             Text(
-                text = stringResource(id = R.string.settings_text),
-                style = MaterialTheme.typography.titleLarge,
+                text = stringResource(id = R.string.loading_text),
+                modifier = Modifier.padding(vertical = 16.dp),
             )
-        },
-        text = {
-            HorizontalDivider()
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                when (settingsUiState) {
-                    SettingsUiState.Loading -> {
-                        Text(
-                            text = stringResource(id = R.string.loading_text),
-                            modifier = Modifier.padding(vertical = 16.dp),
-                        )
-                    }
+        }
 
-                    is SettingsUiState.Success -> {
+        is SettingsUiState.Success -> {
+            LaunchedEffect(settingsUiState.settings.language) {
+                title = context.getString(R.string.settings_text)
+            }
+            AlertDialog(
+                properties = DialogProperties(usePlatformDefaultWidth = false),
+                modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - 80.dp),
+                onDismissRequest = { onDismiss() },
+                title = {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
+                text = {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
                         SettingsPanel(
                             settings = settingsUiState.settings,
                             onChangeDarkThemeConfig = onChangeDarkThemeConfig,
                             onChangeLanguageConfig = onChangeLanguageConfig
                         )
                     }
-                }
-                HorizontalDivider(Modifier.padding(top = 8.dp))
-            }
-        },
-        confirmButton = {
-            Text(
-                text = stringResource(id = R.string.ok_text),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .clickable { onDismiss() },
+                    HorizontalDivider(Modifier.padding(top = 8.dp))
+                },
+                confirmButton = {
+                    Text(
+                        text = stringResource(id = R.string.ok_text),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .clickable { onDismiss() },
+                    )
+                },
             )
-        },
-    )
+        }
+    }
 }
 
 @Composable
